@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {View, ScrollView, TouchableOpacity, Text, Alert} from 'react-native';
 import {Table, Row} from 'react-native-table-component';
-
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import Form from './Form';
 import {utils, write} from 'xlsx';
 import RNBU from 'react-native-blob-util';
@@ -12,13 +12,13 @@ const TableComponent = () => {
   const [newValue, setNewValue] = useState('');
 
   const [activities, setActivities] = useState([
-    ['8:00AM to 9:00AM', '', '', '', '', '', ''],
-    ['9:00AM to 10:00AM', '', '', '', '', '', ''],
-    ['10:00AM to 11:00AM', '', '', '', '', '', ''],
-    ['12:00PM to 1:00PM', '', '', '', '', '', ''],
-    ['2:00PM to 3:00AM', '', '', '', '', '', ''],
-    ['3:00AM to 4:00AM', '', '', '', '', '', ''],
-    ['4:00AM to 5:00AM', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['Mon', '', '', '', '', '', '', ''],
+    ['Tue', '', '', '', '', '', '', ''],
+    ['Wed', '', '', '', '', '', '', ''],
+    ['Thur', '', '', '', '', '', '', ''],
+    ['Fri', '', '', '', '', '', '', ''],
+    ['Sat', '', '', '', '', '', '', ''],
   ]);
 
   const handleRowClick = (rowIndex, cellIndex, newValue) => {
@@ -38,8 +38,7 @@ const TableComponent = () => {
   };
   const exportToCsv = async () => {
     try {
-      const headers = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const worksheetData = [headers, ...activities];
+      const worksheetData = [...activities];
 
       const worksheet = utils.aoa_to_sheet(worksheetData);
       const workbook = utils.book_new();
@@ -66,25 +65,73 @@ const TableComponent = () => {
       Alert.alert('Export Error', `Error exporting activities: ${error}`);
     }
   };
+  const exportToPdf = async () => {
+    try {
+      const htmlContent = `
+        <html>
+          <head>
+            <style>
+              
+              table {
+                border-collapse: collapse;
+                width: 100%;
+                
+              }
+              th, td {
+                border: 1px solid black;
+                padding: 8px;
+                text-align: center;
+                width: 50px;
+              }
+              th {
+                background-color: #f2f2f2;
+              }
+            </style>
+          </head>
+          <body>
+            <table>
+              ${activities
+                .map(
+                  rowData =>
+                    `<tr>${rowData
+                      .map(item => `<td>${item}</td>`)
+                      .join('')}</tr>`,
+                )
+                .join('')}
+            </table>
+          </body>
+        </html>
+      `;
+      const options = {
+        html: htmlContent,
+        fileName: 'activities.pdf', // Specify the file name
+        directory: 'Download', // Use the Download directory
+      };
 
-  const convertToCsv = data => {
-    const csvRows = [];
-    for (const row of data) {
-      csvRows.push(row.join(','));
+      const pdf = await RNHTMLtoPDF.convert(options);
+
+      const mimeType = 'application/pdf';
+      const pdfFileName = 'activities.pdf';
+
+      await RNBU.MediaCollection.copyToMediaStore(
+        {parentFolder: '', mimeType, name: pdfFileName},
+        'Download',
+        pdf.filePath,
+      );
+
+      Alert.alert('Exported to PDF', `PDF saved to Download folder`);
+    } catch (error) {
+      Alert.alert(
+        'Export Error',
+        `Error exporting activities to PDF: ${error}`,
+      );
     }
-    return csvRows.join('\n');
   };
 
   return (
     <View className="w-[90%] m-5">
       <ScrollView horizontal alwaysBounceVertical={true}>
         <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
-          <Row
-            className="w-[900px]"
-            data={['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']}
-            style={{height: '10%', backgroundColor: '#f1f8ff'}}
-            textStyle={{textAlign: 'center', fontWeight: 'bold'}}
-          />
           {activities.map((rowData, rowIndex) => (
             <Row
               className="w-[900px]"
@@ -93,7 +140,7 @@ const TableComponent = () => {
                 <TouchableOpacity
                   key={cellIndex}
                   onPress={() => handleRowClick(rowIndex, cellIndex, item)}>
-                  <Text className="text-center p-5">{item}</Text>
+                  <Text className="p-5 text-center">{item}</Text>
                 </TouchableOpacity>
               ))}
               style={{height: 80, backgroundColor: '#ffffff'}}
@@ -120,6 +167,17 @@ const TableComponent = () => {
           borderRadius: 5,
         }}>
         <Text style={{color: 'white', textAlign: 'center'}}>Export CSV</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={exportToPdf}
+        style={{
+          marginTop: 20,
+          padding: 10,
+          backgroundColor: '#197085',
+          borderRadius: 5,
+        }}>
+        <Text style={{color: 'white', textAlign: 'center'}}>Export Pdf</Text>
       </TouchableOpacity>
     </View>
   );

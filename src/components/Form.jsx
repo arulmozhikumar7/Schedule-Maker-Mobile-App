@@ -27,7 +27,7 @@ const Form = ({modalVisible, setModalVisible, onSubmit}) => {
       onRequestClose={() => setModalVisible(false)}>
       <View className="flex-1 justify-center items-center bg-[#00000080]">
         <View className="bg-white p-6  w-[80%] rounded-2xl">
-          <Text className="text-text-color mb-1">Task Name:</Text>
+          <Text className="mb-1 text-text-color">Task Name:</Text>
           <TextInput
             className="rounded-2xl mb-3 p-3 border border-[#197085]"
             value={taskName}
@@ -35,19 +35,19 @@ const Form = ({modalVisible, setModalVisible, onSubmit}) => {
           />
 
           <Pressable
-            className="bg-[#197085] p-3 rounded-2xl mb-5"
+            className="bg-[#197085] p-3 rounded-2xl m-2"
             onPress={handleSubmit}>
             <Text className="text-center text-white">Add Value</Text>
           </Pressable>
           <Pressable
-            className="bg-[#197085] p-3 rounded-2xl"
+            className="bg-[#197085] p-3 rounded-2xl m-2"
             onPress={handleDelete}>
             <Text className="text-center text-white">Delete Value</Text>
           </Pressable>
           <Pressable
             onPress={() => setModalVisible(false)}
             style={{marginTop: 10}}>
-            <Text className="text-center text-text-color">Cancel</Text>
+            <Text className="m-1 text-center text-text-color">Cancel</Text>
           </Pressable>
         </View>
       </View>
